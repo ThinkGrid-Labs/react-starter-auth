@@ -1,0 +1,15 @@
+efd340565295aa66e3592e82090f8a50
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthError = void 0;
+class AuthError extends Error {
+    /**
+       * @constructor
+       * @param message - Error message
+       */
+    constructor(message) {
+        super(message);
+    }
+}
+exports.AuthError = AuthError;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiL1VzZXJzL2Frb3NpZGVuY2lvL0RvY3VtZW50cy9CT09LU1BJTkUvcmVhY3Qtc3RhcnRlci1hdXRoL3NyYy9lcnJvcnMudHMiLCJtYXBwaW5ncyI6Ijs7O0FBQ0EsTUFBYSxTQUFVLFNBQVEsS0FBSztJQUNsQzs7O1NBR0s7SUFDTCxZQUFZLE9BQWU7UUFDekIsS0FBSyxDQUFDLE9BQU8sQ0FBQyxDQUFDO0lBQ2pCLENBQUM7Q0FDRjtBQVJELDhCQVFDIiwibmFtZXMiOltdLCJzb3VyY2VzIjpbIi9Vc2Vycy9ha29zaWRlbmNpby9Eb2N1bWVudHMvQk9PS1NQSU5FL3JlYWN0LXN0YXJ0ZXItYXV0aC9zcmMvZXJyb3JzLnRzIl0sInNvdXJjZXNDb250ZW50IjpbIlxuZXhwb3J0IGNsYXNzIEF1dGhFcnJvciBleHRlbmRzIEVycm9yIHtcbiAgLyoqXG4gICAgICogQGNvbnN0cnVjdG9yXG4gICAgICogQHBhcmFtIG1lc3NhZ2UgLSBFcnJvciBtZXNzYWdlXG4gICAgICovXG4gIGNvbnN0cnVjdG9yKG1lc3NhZ2U6IHN0cmluZykge1xuICAgIHN1cGVyKG1lc3NhZ2UpO1xuICB9XG59XG4iXSwidmVyc2lvbiI6M30=

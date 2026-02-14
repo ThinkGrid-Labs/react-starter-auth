@@ -1,9 +1,8 @@
-import * as React from 'react'
+import * as React from 'react';
+import { AuthContextType } from './types';
 
-import { StarterContextType } from './types'
+const AuthContext = React.createContext<AuthContextType<any> | null>(null);
 
-const AuthContext = React.createContext<StarterContextType | null>(null)
-
-export default AuthContext
+export default AuthContext;
 
 

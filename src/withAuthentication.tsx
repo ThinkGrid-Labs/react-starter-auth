@@ -1,16 +1,27 @@
 import * as React from 'react';
-import { isAuthenticated } from "./utils/helpers"
+import { isAuthenticated } from './utils/helpers';
 
-const withAuthentication = <P extends Record<string, unknown>>(
-    Component: React.ComponentType<P>
-  ): React.FC<P> => {
-    const Auth: React.FC<P> = (props) => {
-      if(!isAuthenticated() && typeof window !== 'undefined') {
-        window.location.pathname = '/login';
+export function withAuthentication<P extends Record<string, unknown>>(
+  Component: React.ComponentType<P>,
+  redirectPath: string = '/login'
+): React.FC<P> {
+  const Auth: React.FC<P> = (props) => {
+    const isAuth = isAuthenticated();
+
+    React.useEffect(() => {
+      if (!isAuth && typeof window !== 'undefined') {
+        window.location.href = redirectPath;
       }
-      return <Component {...props} />;
-    };
-    return Auth;
+    }, [isAuth]);
+
+    if (!isAuth) {
+      return null;
+    }
+
+    return <Component {...props} />;
   };
-  
-  export default withAuthentication;
+
+  return Auth;
+}
+
+export default withAuthentication;

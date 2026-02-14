@@ -1,0 +1,23 @@
+[36m
+[1msrc/index.tsx[22m → [1m./dist[22m...[39m
+[1m[31m[!] [1m(plugin rpt2) RollupError: There was an error during the build:
+  [plugin rpt2] [96msrc/AuthProvider.tsx[0m:[93m4[0m:[93m41[0m - [91merror[0m[90m TS6133: [0m'isTokenValid' is declared but its value is never read.
+
+[7m4[0m import { deleteStateUser, getStateUser, isTokenValid, setStateUser } from './utils/helpers';
+[7m [0m [91m                                        ~~~~~~~~~~~~[0m
+
+Additionally, handling the error in the 'buildEnd' hook caused the following error:
+  [plugin rpt2] [96msrc/AuthProvider.tsx[0m:[93m4[0m:[93m41[0m - [91merror[0m[90m TS6133: [0m'isTokenValid' is declared but its value is never read.
+
+[7m4[0m import { deleteStateUser, getStateUser, isTokenValid, setStateUser } from './utils/helpers';
+[7m [0m [91m                                        ~~~~~~~~~~~~[0m
+[22m[1m[39m[22m
+src/index.tsx
+[2m    at Object.getRollupError (/Users/akosidencio/Documents/BOOKSPINE/react-starter-auth/node_modules/.pnpm/rollup@4.57.0/node_modules/rollup/dist/shared/parseAst.js:287:41)
+    at /Users/akosidencio/Documents/BOOKSPINE/react-starter-auth/node_modules/.pnpm/rollup@4.57.0/node_modules/rollup/dist/shared/rollup.js:23778:51
+    at catchUnfinishedHookActions (/Users/akosidencio/Documents/BOOKSPINE/react-starter-auth/node_modules/.pnpm/rollup@4.57.0/node_modules/rollup/dist/shared/rollup.js:23271:16)
+    at rollupInternal (/Users/akosidencio/Documents/BOOKSPINE/react-starter-auth/node_modules/.pnpm/rollup@4.57.0/node_modules/rollup/dist/shared/rollup.js:23761:5)
+    at build (/Users/akosidencio/Documents/BOOKSPINE/react-starter-auth/node_modules/.pnpm/rollup@4.57.0/node_modules/rollup/dist/bin/rollup:1722:55)
+    at runRollup (/Users/akosidencio/Documents/BOOKSPINE/react-starter-auth/node_modules/.pnpm/rollup@4.57.0/node_modules/rollup/dist/bin/rollup:1858:21)[22m
+
+

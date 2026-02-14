@@ -1,18 +1,29 @@
 import * as React from 'react';
-import { deleteStateUser, isAuthenticated } from "./utils/helpers"
+import { deleteStateUser, isAuthenticated } from './utils/helpers';
 
-type PropType = {
-  component: React.FC
-  redirectPath?: string
-};
+export interface ProtectedRouteProps {
+  component: React.ComponentType<any>;
+  redirectPath?: string;
+}
 
-const ProtectedRoute: React.FC<PropType> = ({ component: Component, redirectPath: Path }) => {
-  if (isAuthenticated){
-    return <Component />
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  component: Component,
+  redirectPath = '/login',
+}) => {
+  const isAuth = isAuthenticated();
+
+  React.useEffect(() => {
+    if (!isAuth && typeof window !== 'undefined') {
+      deleteStateUser();
+      window.location.href = redirectPath;
+    }
+  }, [isAuth, redirectPath]);
+
+  if (!isAuth) {
+    return null;
   }
-  deleteStateUser() // logout
-  return window.location.href = Path || '/login'
-  
+
+  return <Component />;
 };
 
 export default ProtectedRoute;

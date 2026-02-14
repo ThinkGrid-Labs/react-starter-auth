@@ -1,18 +1,14 @@
-export interface StarterContextType {
-  isLoading: boolean
-  isAuthenticated: boolean
-  user: AuthStateUserObject
-  signIn: (state: AuthStateInterface) => void
-  logOut: () => void
+export interface AuthContextType<TUser = Record<string, any>> {
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  user: TUser | null;
+  signIn: (state: AuthStateInterface<TUser>) => void;
+  logOut: (redirectPath?: string) => void;
 }
 
-export interface AuthStateUserObject {
-  [x: string]: any;
-}
-
-export interface AuthStateInterface {
-  token: string,
-  user?: AuthStateUserObject | null,
+export interface AuthStateInterface<TUser = Record<string, any>> {
+  token: string;
+  user?: TUser | null;
 }
 
 export interface TokenObject {
@@ -23,7 +19,6 @@ export interface TokenObject {
   nbf?: number;
   iat?: number;
   jti?: string;
-
 }
 
 export interface TokenHeader {
@@ -36,8 +31,7 @@ export interface TokenDecodeOptions {
   header?: boolean;
 }
 
-
-export interface FetcherOptions  {[key: string]: string | any | undefined}
-
-export interface FetcherHeaders  {[key: string]: string | any | undefined}
+export interface FetcherOptions extends RequestInit {
+  headers?: HeadersInit;
+}
 

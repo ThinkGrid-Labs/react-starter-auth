@@ -1,0 +1,51 @@
+3bd2c78e95147590e15f3fa9ac8e8a03
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const React = __importStar(require("react"));
+const AuthContext_1 = __importDefault(require("./AuthContext"));
+const errors_1 = require("./errors");
+const useAuth = () => {
+    const context = React.useContext(AuthContext_1.default);
+    if (context === null) {
+        throw new errors_1.AuthError('AuthProvider is missing. ' + 'Please add the AuthProvider');
+    }
+    return context;
+};
+exports.default = useAuth;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiL1VzZXJzL2Frb3NpZGVuY2lvL0RvY3VtZW50cy9CT09LU1BJTkUvcmVhY3Qtc3RhcnRlci1hdXRoL3NyYy91c2VBdXRoLnRzIiwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsNkNBQThCO0FBQzlCLGdFQUF3QztBQUN4QyxxQ0FBb0M7QUFJcEMsTUFBTSxPQUFPLEdBQUcsR0FBdUIsRUFBRTtJQUNyQyxNQUFNLE9BQU8sR0FBRyxLQUFLLENBQUMsVUFBVSxDQUFDLHFCQUFXLENBQUMsQ0FBQTtJQUM3QyxJQUFJLE9BQU8sS0FBSyxJQUFJLEVBQUUsQ0FBQztRQUNuQixNQUFNLElBQUksa0JBQVMsQ0FBQywyQkFBMkIsR0FBRyw2QkFBNkIsQ0FBQyxDQUFBO0lBQ3BGLENBQUM7SUFDRCxPQUFPLE9BQU8sQ0FBQztBQUNuQixDQUFDLENBQUE7QUFFRCxrQkFBZSxPQUFPLENBQUMiLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiL1VzZXJzL2Frb3NpZGVuY2lvL0RvY3VtZW50cy9CT09LU1BJTkUvcmVhY3Qtc3RhcnRlci1hdXRoL3NyYy91c2VBdXRoLnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCAqIGFzIFJlYWN0IGZyb20gJ3JlYWN0J1xuaW1wb3J0IEF1dGhDb250ZXh0IGZyb20gXCIuL0F1dGhDb250ZXh0XCI7XG5pbXBvcnQgeyBBdXRoRXJyb3IgfSBmcm9tICcuL2Vycm9ycydcblxuaW1wb3J0IHsgU3RhcnRlckNvbnRleHRUeXBlIH0gZnJvbSBcIi4vdHlwZXNcIlxuXG5jb25zdCB1c2VBdXRoID0gKCk6IFN0YXJ0ZXJDb250ZXh0VHlwZSA9PiB7XG4gICAgY29uc3QgY29udGV4dCA9IFJlYWN0LnVzZUNvbnRleHQoQXV0aENvbnRleHQpXG4gICAgaWYgKGNvbnRleHQgPT09IG51bGwpIHtcbiAgICAgICAgdGhyb3cgbmV3IEF1dGhFcnJvcignQXV0aFByb3ZpZGVyIGlzIG1pc3NpbmcuICcgKyAnUGxlYXNlIGFkZCB0aGUgQXV0aFByb3ZpZGVyJylcbiAgICB9XG4gICAgcmV0dXJuIGNvbnRleHQ7XG59XG5cbmV4cG9ydCBkZWZhdWx0IHVzZUF1dGg7XG4iXSwidmVyc2lvbiI6M30=

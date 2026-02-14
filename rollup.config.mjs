@@ -5,7 +5,9 @@ import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import resolve from '@rollup/plugin-node-resolve';
 import typescript from 'rollup-plugin-typescript2';
 
-import pkg from './package.json' assert { type: "json" };
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pkg = require('./package.json');
 
 const licenseBanner = license({
   banner: {
@@ -28,7 +30,7 @@ export default [
           "react": "React",
           "js-cookie": "Cookies",
           "axios": "Axios",
-          "react-router-dom":"ReactRouterDOM"
+          "react-router-dom": "ReactRouterDOM"
         },
         sourcemap: true
       },
@@ -52,7 +54,7 @@ export default [
           "react": "React",
           "js-cookie": "Cookies",
           "axios": "Axios",
-          "react-router-dom":"ReactRouterDOM"
+          "react-router-dom": "ReactRouterDOM"
         },
         sourcemap: true
       },

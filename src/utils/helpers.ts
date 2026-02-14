@@ -1,21 +1,22 @@
 import { getAuthToken, clearAuthToken } from "./cookie"
 
 import { AuthError } from "../errors";
-import {  AuthStateUserObject, TokenObject, TokenHeader, TokenDecodeOptions } from "../types"
+import { TokenObject, TokenHeader, TokenDecodeOptions } from "../types"
 
-function setStateUser(user:  AuthStateUserObject) {
+function setStateUser<TUser = Record<string, any>>(user: TUser) {
   if (typeof window !== "undefined" && window.localStorage) {
     localStorage.setItem('starter_auth_user', JSON.stringify(user));
   }
 }
 
-function getStateUser() {
+function getStateUser<TUser = Record<string, any>>(): TUser | null {
   if (typeof window !== "undefined" && window.localStorage) {
     const user = localStorage.getItem('starter_auth_user');
     if (user) {
-      return JSON.parse(user);
+      return JSON.parse(user) as TUser;
     }
   }
+  return null;
 }
 
 function deleteStateUser() {
@@ -67,7 +68,7 @@ function base64UrlDecode(str: string) {
   }
 }
 
-function tokenDecode<T = TokenHeader | TokenObject>(token: string, options?: TokenDecodeOptions) : T {
+function tokenDecode<T = TokenHeader | TokenObject>(token: string, options?: TokenDecodeOptions): T {
   if (typeof token !== "string") {
     throw new AuthError("Invalid token specified: must be a string");
   }
@@ -98,14 +99,20 @@ function tokenDecode<T = TokenHeader | TokenObject>(token: string, options?: Tok
   }
 }
 
-function isTokenValid(token: string) : boolean {
-  if (token) {
-    const decodedJwt:  TokenObject = tokenDecode(token);
-    if (typeof decodedJwt === 'object' && decodedJwt !== null) {
-      return decodedJwt.exp * 1000 > Date.now()
+function isTokenValid(token: string): boolean {
+  try {
+    if (token) {
+      const decodedJwt: TokenObject = tokenDecode(token);
+      if (typeof decodedJwt === 'object' && decodedJwt !== null) {
+        if (decodedJwt.exp) {
+          return decodedJwt.exp * 1000 > Date.now()
+        }
+      }
     }
+    return false;
+  } catch (error) {
+    return false;
   }
-  return false;
 }
 
 

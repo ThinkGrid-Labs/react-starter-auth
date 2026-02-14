@@ -1,15 +1,14 @@
-import * as React from 'react'
-import AuthContext from "./AuthContext";
-import { AuthError } from './errors'
+import * as React from 'react';
+import AuthContext from './AuthContext';
+import { AuthError } from './errors';
+import { AuthContextType } from './types';
 
-import { StarterContextType } from "./types"
-
-const useAuth = (): StarterContextType => {
-    const context = React.useContext(AuthContext)
+const useAuth = <TUser = Record<string, any>>(): AuthContextType<TUser> => {
+    const context = React.useContext(AuthContext);
     if (context === null) {
-        throw new AuthError('AuthProvider is missing. ' + 'Please add the AuthProvider')
+        throw new AuthError('AuthProvider is missing. Please add the AuthProvider');
     }
-    return context;
-}
+    return context as AuthContextType<TUser>;
+};
 
 export default useAuth;
