@@ -1,93 +1,134 @@
+# @think-grid-labs/react-starter-auth
+
 <div align="center">
-        <a href="#" title="React Starter Authentication">
-            <img src="https://github.com/akosidencio/react-starter-auth/blob/main/react-starter-auth.png" alt="React Starter Authentication" />
-        </a>
+  <img src="https://raw.githubusercontent.com/ThinkGrid-Labs/react-starter-auth/main/react-starter-auth.png" alt="React Starter Authentication" width="600" />
+  <p>A lightweight, type-safe, and robust authentication suite for React and Next.js.</p>
 </div>
 
+---
 
-### Features
+### 🚀 Features
+- **Type-Safe**: Built with TypeScript, supporting generic User objects for better developer experience.
+- **Next.js & React Ready**: Optimized for both client-side and server-side contexts.
+- **JWT Centric**: Seamless handling of JWT tokens with automatic expiry checks.
+- **Secure by Default**: Strict cookie settings and secure state persistence.
+- **Fetcher Integration**: Auto-injects `Authorization` headers into your API requests.
+- **Route Protection**: Higher-Order Components and Wrapper components for private routes.
 
-Authentication library built for react token based authentication with JWT
-- Lightweight and easy to use
-- Built for React JS
-- Works with Next js
-- JWT based authentication
-- Secure client authentication
+---
 
-### Installation
-```jsx
-  npm install @think-grid-labs/react-starter-auth
-  
-  yarn @think-grid-labs/react-starter-auth
+### 📦 Installation
+
+```bash
+# Using pnpm
+pnpm add @think-grid-labs/react-starter-auth
+
+# Using npm
+npm install @think-grid-labs/react-starter-auth
+
+# Using yarn
+yarn add @think-grid-labs/react-starter-auth
 ```
 
-### Setup
+---
 
-```jsx
+### 🛠️ Setup
+
+Wrap your application in the `AuthProvider`:
+
+```tsx
 import { AuthProvider } from '@think-grid-labs/react-starter-auth';
 
-<AuthProvider>
-  <App>
-</AuthProvider>
-
-```
-### Signin
-
-```jsx
-import { useAuth } from '@think-grid-labs/react-starter-auth'
-
-const { signIn } = useAuth()
-
-const access_token = 'jsjdjdjsxxfd' // response from api
-const user {
-    name: 'john doe',
-    email: 'example@example.com',
-    phone: '',
-    role: ''
+function App({ children }) {
+  return (
+    <AuthProvider>
+      {children}
+    </AuthProvider>
+  );
 }
-
-const authuser = {
-  token: access_token,
-  user: user
-}
-signIn(authuser)
-
 ```
 
-### User 
+---
 
-```jsx
-import { useAuth } from '@think-grid-labs/react-starter-auth'
+### 🔑 Authentication Flow
 
-// You can pass a custom User type for better type safety
-interface MyUser {
+#### Sign In
+```tsx
+import { useAuth } from '@think-grid-labs/react-starter-auth';
+
+const { signIn } = useAuth();
+
+const handleLogin = async () => {
+  const { token, user } = await api.login(credentials);
+  
+  signIn({ 
+    token, 
+    user: { 
+      id: user.id, 
+      name: user.display_name,
+      role: 'admin'
+    } 
+  });
+};
+```
+
+#### Get User (State)
+```tsx
+import { useAuth } from '@think-grid-labs/react-starter-auth';
+
+// Define your own User interface for full type safety
+interface UserProfile {
+  id: string;
   name: string;
-  email: string;
+  role: string;
 }
 
-const { isAuthenticated, user } = useAuth<MyUser>()
+const { user, isAuthenticated, isLoading } = useAuth<UserProfile>();
+
+console.log(user?.role); // Fully typed!
 ```
 
-### Fetcher
+---
 
-fetcher extends the native Web fetch() API to update each request on the server to set headers Authorizaton Bearer upon sign in.
+### 📡 Data Fetching
 
-```jsx
-import { fetcher } from '@think-grid-labs/react-starter-auth'
+The `fetcher` utility automatically appends the `Authorization: Bearer <token>` header to your requests if a valid token exists.
 
-const res = fetcher('https://example.com/api/posts') // GET
-const data = await res.json()
+```tsx
+import { fetcher } from '@think-grid-labs/react-starter-auth';
 
-const res = fetcher('https://example.com/api/posts', { method: 'POST', body: JSON.stringify(data) }) // POST
-const data = await res.json()
-
+const getProfile = async () => {
+  const response = await fetcher('https://api.example.com/me');
+  const data = await response.json();
+  return data;
+};
 ```
 
-### Private route page
+---
 
-```jsx
-import { ProtectedRoute, withAuthentication } from '@think-grid-labs/react-starter-auth'
+### 🛡️ Route Protection
 
+#### Using `ProtectedRoute`
+```tsx
+import { ProtectedRoute } from '@think-grid-labs/react-starter-auth';
+import Dashboard from './Dashboard';
+
+// Automatically redirects to /login if not authenticated
+<ProtectedRoute component={Dashboard} redirectPath="/login" />
 ```
+
+#### Using `withAuthentication` (HOC)
+```tsx
+import { withAuthentication } from '@think-grid-labs/react-starter-auth';
+
+const PrivatePage = () => <div>Private Content</div>;
+
+export default withAuthentication(PrivatePage);
+```
+
+---
+
+### 📄 License
+MIT © [ThinkGrid-Labs](https://github.com/ThinkGrid-Labs)
 
 

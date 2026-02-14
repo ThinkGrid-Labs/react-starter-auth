@@ -1,5 +1,6 @@
 {
   "name": "@think-grid-labs/react-starter-auth",
+  "version": "0.1.0",
   "description": "React Next Starter Authentication",
   "keywords": [
     "reactjs",
