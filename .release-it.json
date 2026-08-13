@@ -1,8 +1,10 @@
 {
   "git": {
-    "commitMessage": "chore: release v${version}",
-    "tagName": "v${version}",
-    "tagAnnotation": "Release v${version}"
+    "//": "Releases are triggered by pushing a tag, so the tag already exists and the version bump is already committed. release-it must not commit, tag or push — it only publishes and creates the GitHub release. requireUpstream is off because a tag checkout is a detached HEAD.",
+    "commit": false,
+    "tag": false,
+    "push": false,
+    "requireUpstream": false
   },
   "npm": {
     "publish": true

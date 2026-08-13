@@ -2,11 +2,12 @@ name: CI
 on:
   push:
     branches:
-      # `main` must stay here: release.yml is gated on a successful CI run for
-      # main, so dropping it would leave releases unable to ever fire.
       - main
       - dev
   pull_request:
+  # Note: releases are triggered by tag pushes, not by this workflow. A broken
+  # tree still cannot reach npm — `prepublishOnly` re-runs lint, typecheck,
+  # tests and build during the publish itself.
 
 jobs:
   verify:
