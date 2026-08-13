@@ -1,6 +1,6 @@
 {
   "name": "@thinkgrid/react-starter-auth",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Secure JWT authentication for React and Next.js — HttpOnly server sessions, verified tokens, CSRF built in.",
   "keywords": [
     "react",

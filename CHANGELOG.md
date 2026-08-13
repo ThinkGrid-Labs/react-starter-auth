@@ -3,6 +3,21 @@
 All notable changes to this project are documented here. This project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.1 — 2026-08-13
+
+Packaging only. No source, API or behaviour changes — upgrading from 1.0.0 is
+safe and requires nothing.
+
+### Changed
+
+- **The installed package is about 40% smaller.** Sourcemaps no longer inline the
+  original TypeScript via `sourcesContent`, which had made them roughly 62% of
+  the unpacked size. Stack traces still resolve to the original file and line;
+  only stepping through source needs the repository, which is public.
+- **The UMD build no longer ships a sourcemap.** It is the minified `<script>`
+  bundle for CDN use and its map was the single largest file in the package. The
+  ESM and CJS builds that real projects import still ship theirs.
+
 ## 1.0.0 — 2026-08-13
 
 First stable release, and a rewrite. The 0.1.x line kept the JWT in a

@@ -36,6 +36,15 @@ const licenseBanner = license({
   },
 });
 
+/**
+ * Sourcemaps without the embedded original source.
+ *
+ * `sourcesContent` inlines every `.ts` file into the maps, which made them ~62%
+ * of the installed package. Stack traces still resolve to the original file and
+ * line; only the "view source" step needs the repository, which is public.
+ */
+const sourcemapExcludeSources = true;
+
 export default [
   // ESM + CJS. Declarations are emitted here only, from tsconfig.build.json,
   // which excludes __tests__ so test typings stay out of the tarball.
@@ -46,6 +55,7 @@ export default [
         dir: './dist',
         format: 'esm',
         sourcemap: true,
+        sourcemapExcludeSources,
         entryFileNames: '[name].mjs',
         chunkFileNames: 'shared/[name]-[hash].mjs',
       },
@@ -53,6 +63,7 @@ export default [
         dir: './dist',
         format: 'cjs',
         sourcemap: true,
+        sourcemapExcludeSources,
         exports: 'named',
         entryFileNames: '[name].cjs',
         chunkFileNames: 'shared/[name]-[hash].cjs',
@@ -75,7 +86,10 @@ export default [
         file: './dist/index.umd.js',
         format: 'umd',
         name: 'ReactStarterAuth',
-        sourcemap: true,
+        // No map for the UMD build: it is the minified <script> bundle for CDN
+        // use, and its map was the single largest file in the package. The ESM
+        // and CJS builds that real projects import still ship theirs.
+        sourcemap: false,
         exports: 'named',
         globals,
       },
