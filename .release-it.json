@@ -12,12 +12,7 @@
   "github": {
     "release": true,
     "releaseName": "v${version}",
-    "autoGenerate": false
-  },
-  "plugins": {
-    "@release-it/conventional-changelog": {
-      "preset": "angular",
-      "ignoreRecommendedBump": true
-    }
+    "//": "GitHub generates the notes itself. CHANGELOG.md is written by hand, so a conventional-commits plugin has nothing useful to add here.",
+    "autoGenerate": true
   }
 }
