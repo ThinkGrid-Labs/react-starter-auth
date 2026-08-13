@@ -2,35 +2,71 @@ name: CI
 on:
   push:
     branches:
+      # `main` must stay here: release.yml is gated on a successful CI run for
+      # main, so dropping it would leave releases unable to ever fire.
       - main
+      - dev
   pull_request:
 
 jobs:
-  lint:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
+      # No `version:` — action-setup reads the `packageManager` field in
+      # package.json, so CI cannot drift from the lockfile's pnpm major.
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      # - run: pnpm tsc --noEmit # Uncomment when strict mode is fully clean
 
-  test:
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Coverage thresholds live in jest.config.js and fail the build when a
+      # change drops below them.
+      - name: Unit tests with coverage gate
+        run: pnpm test:coverage
+
+      - name: Build
+        run: pnpm build
+
+  # Separate job: it needs a browser and the example app, and it is the only
+  # place the HttpOnly claim is checked against a real browser.
+  e2e:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+
+      # The example depends on the library by path, so it must be built first.
+      - name: Build library
+        run: pnpm build
+
+      - name: Install example dependencies
+        run: pnpm install --dir examples/next-js --no-frozen-lockfile
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: End-to-end tests
+        run: pnpm test:e2e
+        env:
+          AUTH_SECRET: e2e-test-secret-at-least-32-characters!!
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: test-results/
+          retention-days: 7

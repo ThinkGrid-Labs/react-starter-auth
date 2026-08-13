@@ -1,18 +1,21 @@
 {
-    "git": {
-        "commitMessage": "chore: release v${version}",
-        "tagName": "v${version}"
-    },
-    "npm": {
-        "publish": true
-    },
-    "github": {
-        "release": true
-    },
-    "plugins": {
-        "@release-it/conventional-changelog": {
-            "preset": "angular",
-            "infile": "CHANGELOG.md"
-        }
+  "git": {
+    "commitMessage": "chore: release v${version}",
+    "tagName": "v${version}",
+    "tagAnnotation": "Release v${version}"
+  },
+  "npm": {
+    "publish": true
+  },
+  "github": {
+    "release": true,
+    "releaseName": "v${version}",
+    "autoGenerate": false
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular",
+      "ignoreRecommendedBump": true
     }
+  }
 }
