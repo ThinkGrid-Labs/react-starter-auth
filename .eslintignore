@@ -1,0 +1,6 @@
+# The example apps carry their own eslint configs and their own node_modules.
+# Linting them from the library root fails on configs that aren't installed here.
+examples/
+
+dist/
+node_modules/

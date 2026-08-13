@@ -1,13 +1,33 @@
-import license from 'rollup-plugin-license';
+import resolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import filesize from 'rollup-plugin-filesize';
+import license from 'rollup-plugin-license';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import resolve from '@rollup/plugin-node-resolve';
 import typescript from 'rollup-plugin-typescript2';
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const pkg = require('./package.json');
+const input = 'src/index.tsx';
+
+// Subpath entries. `core` and `server` never import React, so a Next.js
+// middleware or route handler pulling in `/server` does not drag the client
+// bundle along with it.
+const entries = {
+  index: 'src/index.tsx',
+  core: 'src/core/index.ts',
+  server: 'src/server/index.ts',
+  next: 'src/adapters/next.ts',
+  'react-router': 'src/adapters/react-router.ts',
+  node: 'src/adapters/node.ts',
+};
+
+// Real runtime dependencies: keep them external so consumers resolve them
+// through npm rather than getting a second copy inlined.
+const external = ['react', 'react-dom', 'react/jsx-runtime', 'jose'];
+
+const globals = {
+  react: 'React',
+  'react-dom': 'ReactDOM',
+  jose: 'jose',
+};
 
 const licenseBanner = license({
   banner: {
@@ -17,56 +37,63 @@ const licenseBanner = license({
 });
 
 export default [
+  // ESM + CJS. Declarations are emitted here only, from tsconfig.build.json,
+  // which excludes __tests__ so test typings stay out of the tarball.
   {
-    input: 'src/index.tsx',
+    input: entries,
     output: [
       {
         dir: './dist',
         format: 'esm',
         sourcemap: true,
-        preserveModules: true,
-        name: 'ReactStarterAuth',
-        globals: {
-          "react": "React",
-          "js-cookie": "Cookies",
-          "axios": "Axios",
-          "react-router-dom": "ReactRouterDOM"
-        },
-        sourcemap: true
+        entryFileNames: '[name].mjs',
+        chunkFileNames: 'shared/[name]-[hash].mjs',
+      },
+      {
+        dir: './dist',
+        format: 'cjs',
+        sourcemap: true,
+        exports: 'named',
+        entryFileNames: '[name].cjs',
+        chunkFileNames: 'shared/[name]-[hash].cjs',
       },
     ],
     plugins: [
       peerDepsExternal(),
       resolve(),
-      typescript(),
+      typescript({ tsconfig: 'tsconfig.build.json', clean: true }),
       filesize(),
     ],
-    external: ["react", "react-dom"],
+    external,
   },
+
+  // UMD for <script> consumers. No declarations — the ESM/CJS build owns those.
   {
-    input: 'src/index.tsx',
+    input,
     output: [
       {
-        file: pkg.main.replace('.js', '.umd.js'),
+        file: './dist/index.umd.js',
         format: 'umd',
         name: 'ReactStarterAuth',
-        globals: {
-          "react": "React",
-          "js-cookie": "Cookies",
-          "axios": "Axios",
-          "react-router-dom": "ReactRouterDOM"
-        },
-        sourcemap: true
+        sourcemap: true,
+        exports: 'named',
+        globals,
       },
     ],
     plugins: [
       peerDepsExternal(),
       resolve(),
-      typescript(),
+      typescript({
+        tsconfig: 'tsconfig.build.json',
+        clean: true,
+        tsconfigOverride: {
+          compilerOptions: { declaration: false, declarationMap: false },
+        },
+      }),
       terser(),
       licenseBanner,
       filesize(),
     ],
-    external: ["react", "react-dom"],
+    external,
   },
 ];

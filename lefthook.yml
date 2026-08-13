@@ -1,9 +1,11 @@
 pre-commit:
   parallel: true
   commands:
+    # Scoped to the library source: the example apps have their own eslint
+    # configs that cannot resolve from this root.
     lint:
-      glob: "*.{js,ts,tsx}"
+      glob: "src/**/*.{ts,tsx}"
       run: pnpm eslint {staged_files}
     typecheck:
-      glob: "*.{ts,tsx}"
-      run: pnpm tsc --noEmit
+      glob: "src/**/*.{ts,tsx}"
+      run: pnpm typecheck

@@ -1,6 +1,12 @@
 name: Release
+
+# Gated on CI. `needs:` only works inside a single workflow, so this waits for
+# the CI run on main to finish and refuses to publish unless it went green.
 on:
-  push:
+  workflow_run:
+    workflows: ['CI']
+    types:
+      - completed
     branches:
       - main
 
@@ -12,21 +18,24 @@ permissions:
 
 jobs:
   release:
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
+          ref: main
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: git config --global user.name "github-actions[bot]"
       - run: git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      # `prepublishOnly` re-runs lint, typecheck, tests and build before the
+      # tarball is uploaded, so a broken tree cannot reach npm.
       - run: pnpm release-it --ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
