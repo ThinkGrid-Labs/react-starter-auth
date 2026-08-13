@@ -3,7 +3,11 @@ import terser from '@rollup/plugin-terser';
 import filesize from 'rollup-plugin-filesize';
 import license from 'rollup-plugin-license';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import typescript from 'rollup-plugin-typescript2';
+// The official plugin. rollup-plugin-typescript2 has been unmaintained since
+// 2023 and silently stops transforming under Rollup >= 4.59, which is the first
+// version without the path-traversal advisory — the file then reaches Rollup's
+// parser as raw TypeScript and fails on `export type`.
+import typescript from '@rollup/plugin-typescript';
 
 const input = 'src/index.tsx';
 
@@ -72,7 +76,18 @@ export default [
     plugins: [
       peerDepsExternal(),
       resolve(),
-      typescript({ tsconfig: 'tsconfig.build.json', clean: true }),
+      typescript({
+        tsconfig: 'tsconfig.build.json',
+        // tsconfig.json sets noEmit for the typecheck script; the build needs
+        // emit on, and declarations laid out to match the exports map.
+        compilerOptions: {
+          noEmit: false,
+          declaration: true,
+          declarationMap: true,
+          declarationDir: './dist',
+          rootDir: './src',
+        },
+      }),
       filesize(),
     ],
     external,
@@ -99,9 +114,13 @@ export default [
       resolve(),
       typescript({
         tsconfig: 'tsconfig.build.json',
-        clean: true,
-        tsconfigOverride: {
-          compilerOptions: { declaration: false, declarationMap: false },
+        // No declarations here — the ESM/CJS build above owns those. sourceMap
+        // is off to match this output, which ships without a map.
+        compilerOptions: {
+          noEmit: false,
+          declaration: false,
+          declarationMap: false,
+          sourceMap: false,
         },
       }),
       terser(),

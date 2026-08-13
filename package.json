@@ -1,6 +1,6 @@
 {
   "name": "@thinkgrid/react-starter-auth",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Secure JWT authentication for React and Next.js — HttpOnly server sessions, verified tokens, CSRF built in.",
   "keywords": [
     "react",
@@ -113,6 +113,7 @@
     "@playwright/test": "^1.62.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.1.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
@@ -136,14 +137,38 @@
     "react-dom": "^19.2.0",
     "release-it": "^21.0.2",
     "rimraf": "5.0.5",
-    "rollup": "^4.1.5",
+    "rollup": "^4.62.4",
     "rollup-plugin-filesize": "10.0.0",
     "rollup-plugin-license": "^3.2.0",
     "rollup-plugin-peer-deps-external": "2.2.4",
-    "rollup-plugin-typescript2": "^0.36.0",
     "ts-jest": "29.1.1",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
+  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a",
+  "pnpm": {
+    "overrides": {
+      "shell-quote": "^1.9.0",
+      "tar": "^7.5.21",
+      "minimatch@<4": "^3.1.4",
+      "minimatch@>=5 <6": "^5.1.8",
+      "minimatch@>=9": "^9.0.7",
+      "brace-expansion@<2": "^1.1.18",
+      "brace-expansion@>=2": "^2.1.4",
+      "js-yaml@<4": "^3.15.1",
+      "js-yaml@>=4": "^4.3.1",
+      "picomatch@<3": "^2.3.2",
+      "picomatch@>=4": "^4.0.4",
+      "lodash": "^4.18.0",
+      "flatted": "^3.4.2",
+      "form-data": "^4.0.6",
+      "ws": "^8.21.0",
+      "serialize-javascript": "^7.0.5",
+      "ajv@>=6 <7": "^6.14.0",
+      "ip-address": "^10.3.1",
+      "sigstore": "^4.1.1",
+      "@babel/core": "^7.29.6",
+      "@tootallnate/once": "^2.0.1"
+    }
+  }
 }

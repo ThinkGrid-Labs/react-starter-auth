@@ -3,6 +3,33 @@
 All notable changes to this project are documented here. This project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.2 — 2026-08-13
+
+Build toolchain only. No source, API or behaviour changes — upgrading from 1.0.1
+is safe and requires nothing.
+
+Published because the bundler and TypeScript plugin that produce `dist/` were
+replaced, so the artifact is rebuilt on a maintained toolchain. The output was
+compared against 1.0.1 file by file: every shipped module is byte-identical
+except the version banner and whitespace in Rollup's generated interop helper,
+and all six entry points export exactly the same names.
+
+### Changed
+
+- **Replaced `rollup-plugin-typescript2` with `@rollup/plugin-typescript`.** The
+  former has been unmaintained since 2023 and silently stops transforming under
+  Rollup 4.59+, which is the first release without
+  [GHSA path-traversal](https://github.com/advisories) in Rollup itself — the
+  build then fails on `export type` because Rollup's parser receives raw
+  TypeScript.
+- **Development dependencies patched.** Rollup updated, plus version-scoped
+  `pnpm.overrides` for transitive advisories in `tar`, `shell-quote`, `minimatch`,
+  `brace-expansion`, `js-yaml`, `picomatch`, `lodash`, `flatted`, `form-data`,
+  `ws`, `serialize-javascript`, `ajv`, `ip-address`, `sigstore` and `@babel/core`.
+
+None of these were reachable from the published package, whose only runtime
+dependency is `jose`. They affected the build and test toolchain.
+
 ## 1.0.1 — 2026-08-13
 
 Packaging only. No source, API or behaviour changes — upgrading from 1.0.0 is
