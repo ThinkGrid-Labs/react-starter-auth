@@ -360,6 +360,149 @@ describe('useRequireAuth', () => {
   });
 });
 
+describe('expiry-driven refresh', () => {
+  it('refreshes before the token dies, without waiting for a request to fail', async () => {
+    fetchMock.mockResolvedValue(res(200, { user: ADA, expiresAt: farFuture() }));
+    const client = makeClient({ refreshSkewSeconds: 60 });
+
+    // Expires inside the skew window, so the refresh timer fires immediately.
+    hookOn(client, { user: ADA, expiresAt: Date.now() + 1_000 });
+
+    await waitFor(() =>
+      expect(fetchMock.mock.calls.map((c) => String(c[0]))).toContain('/api/auth/refresh'),
+    );
+  });
+
+  it('signs out when the refresh is rejected', async () => {
+    fetchMock.mockResolvedValue(res(401, { error: 'refresh_failed' }));
+    const client = makeClient({ refreshSkewSeconds: 60 });
+    const { result } = hookOn(client, { user: ADA, expiresAt: Date.now() + 1_000 });
+
+    await waitFor(() => expect(result.current.status).toBe('unauthenticated'));
+  });
+
+  it('does not schedule a refresh when signed out', () => {
+    const client = makeClient();
+    hookOn(client, null);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('focus revalidation', () => {
+  it('re-checks the session when the tab regains focus', async () => {
+    fetchMock.mockResolvedValue(res(200, { user: ADA, expiresAt: farFuture() }));
+    const client = makeClient();
+    hookOn(client, { user: ADA, expiresAt: farFuture() });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/session', expect.anything());
+  });
+
+  it('can be turned off', async () => {
+    const client = makeClient({ revalidateOnFocus: false });
+    hookOn(client, { user: ADA, expiresAt: farFuture() });
+
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('cross-tab sync', () => {
+  /** jsdom ships no BroadcastChannel, so the provider's guard skips it entirely. */
+  class FakeChannel {
+    static instances: FakeChannel[] = [];
+    /** Every message posted on any channel. The sender closes itself, so
+     *  per-instance records vanish before a test can inspect them. */
+    static sent: Array<{ name: string; message: string }> = [];
+    onmessage: ((event: MessageEvent<string>) => void) | null = null;
+
+    constructor(public name: string) {
+      FakeChannel.instances.push(this);
+    }
+
+    postMessage(message: string) {
+      FakeChannel.sent.push({ name: this.name, message });
+      for (const channel of FakeChannel.instances) {
+        if (channel !== this && channel.name === this.name) {
+          channel.onmessage?.({ data: message } as MessageEvent<string>);
+        }
+      }
+    }
+
+    close() {
+      FakeChannel.instances = FakeChannel.instances.filter((c) => c !== this);
+    }
+  }
+
+  beforeEach(() => {
+    FakeChannel.instances = [];
+    FakeChannel.sent = [];
+    (globalThis as unknown as { BroadcastChannel: unknown }).BroadcastChannel = FakeChannel;
+  });
+
+  afterEach(() => {
+    delete (globalThis as unknown as { BroadcastChannel?: unknown }).BroadcastChannel;
+  });
+
+  it('signs out when another tab signs out', async () => {
+    const client = makeClient();
+    const { result } = hookOn(client, { user: ADA, expiresAt: farFuture() });
+    expect(result.current.status).toBe('authenticated');
+
+    // Another tab broadcasting on the same channel.
+    await act(async () => {
+      new FakeChannel('react-starter-auth:/api/auth').postMessage('signout');
+    });
+
+    expect(result.current.status).toBe('unauthenticated');
+  });
+
+  it('revalidates when another tab signs in', async () => {
+    fetchMock.mockResolvedValue(res(200, { user: ADA, expiresAt: farFuture() }));
+    const client = makeClient();
+    const { result } = hookOn(client, null);
+
+    await act(async () => {
+      new FakeChannel('react-starter-auth:/api/auth').postMessage('signin');
+    });
+
+    await waitFor(() => expect(result.current.status).toBe('authenticated'));
+  });
+
+  it('announces its own sign-out to other tabs', async () => {
+    fetchMock.mockResolvedValue(res(200, { ok: true }));
+    const client = makeClient();
+    const { result } = hookOn(client, { user: ADA, expiresAt: farFuture() });
+
+    await act(async () => {
+      await result.current.signOut();
+    });
+
+    expect(FakeChannel.sent).toContainEqual({
+      name: 'react-starter-auth:/api/auth',
+      message: 'signout',
+    });
+    expect(result.current.status).toBe('unauthenticated');
+  });
+
+  it('can be turned off', async () => {
+    const client = makeClient({ syncAcrossTabs: false });
+    const { result } = hookOn(client, { user: ADA, expiresAt: farFuture() });
+
+    await act(async () => {
+      new FakeChannel('react-starter-auth:/api/auth').postMessage('signout');
+    });
+
+    expect(result.current.status).toBe('authenticated');
+  });
+});
+
 describe('useAuth outside a provider', () => {
   it('throws a named AuthError', () => {
     const { useAuth } = makeClient();

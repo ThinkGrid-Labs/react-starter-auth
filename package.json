@@ -1,13 +1,36 @@
 {
   "name": "@thinkgrid/react-starter-auth",
-  "version": "0.2.0",
-  "description": "React Next Starter Authentication",
+  "version": "1.0.0",
+  "description": "Secure JWT authentication for React and Next.js — HttpOnly server sessions, verified tokens, CSRF built in.",
   "keywords": [
-    "reactjs",
+    "react",
     "nextjs",
     "authentication",
-    "jwt"
+    "auth",
+    "jwt",
+    "session",
+    "httponly",
+    "cookie",
+    "csrf",
+    "jose",
+    "bff",
+    "react-router",
+    "remix",
+    "ssr"
   ],
+  "license": "MIT",
+  "author": "Dennis Paler <dennis@thinkgrid.dev>",
+  "homepage": "https://github.com/thinkgrid-labs/react-starter-auth#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thinkgrid-labs/react-starter-auth.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thinkgrid-labs/react-starter-auth/issues"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
   "source": "src/index.tsx",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -54,17 +77,12 @@
   },
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md",
+    "MIGRATION.md"
   ],
-  "author": "Dennis Paler <dennis@thinkgrid.dev>",
-  "homepage": "https://github.com/thinkgrid-labs/react-starter-auth#readme",
-  "license": "MIT",
   "publishConfig": {
     "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/thinkgrid-labs/react-starter-auth.git"
   },
   "scripts": {
     "build": "run-s build:clean build:bundle",
@@ -76,13 +94,23 @@
     "test": "run-s lint typecheck test:unit",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "preversion": "run-s test",
     "prepublishOnly": "run-s test build",
     "release": "release-it",
     "prepare": "lefthook install"
   },
+  "dependencies": {
+    "jose": "^5.10.0"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@release-it/conventional-changelog": "^8.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
@@ -117,13 +145,6 @@
     "ts-jest": "29.1.1",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "jose": "^5.10.0"
-  },
-  "peerDependencies": {
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
 }

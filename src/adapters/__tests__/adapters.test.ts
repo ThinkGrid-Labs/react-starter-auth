@@ -106,15 +106,17 @@ describe('Next.js adapter', () => {
   });
 
   describe('guard', () => {
-    it('redirects signed-out visitors and preserves the destination', async () => {
+    /**
+     * A URL, not a Response, so the caller builds the redirect with the same
+     * `NextResponse` it already uses for the continue branch.
+     */
+    it('returns where to send signed-out visitors, preserving the destination', async () => {
       const adapter = createNextAdapter(makeAuth());
-      const response = await adapter.guard(new Request(`${APP}/dashboard?tab=1`));
+      const target = await adapter.guard(new Request(`${APP}/dashboard?tab=1`));
 
-      expect(response).not.toBeNull();
-      expect(response!.status).toBe(307);
-      const location = new URL(response!.headers.get('location')!);
-      expect(location.pathname).toBe('/login');
-      expect(location.searchParams.get('next')).toBe('/dashboard?tab=1');
+      expect(target).toBeInstanceOf(URL);
+      expect(target!.pathname).toBe('/login');
+      expect(target!.searchParams.get('next')).toBe('/dashboard?tab=1');
     });
 
     it('lets a signed-in request continue', async () => {
@@ -122,8 +124,8 @@ describe('Next.js adapter', () => {
       const cookie = await signedInCookieHeader(auth);
       const adapter = createNextAdapter(auth);
 
-      const response = await adapter.guard(new Request(`${APP}/dashboard`, { headers: { cookie } }));
-      expect(response).toBeNull();
+      const target = await adapter.guard(new Request(`${APP}/dashboard`, { headers: { cookie } }));
+      expect(target).toBeNull();
     });
 
     it('skips paths the protect predicate excludes', async () => {
@@ -134,19 +136,18 @@ describe('Next.js adapter', () => {
         });
 
       expect(await guard('/public')).toBeNull();
-      expect((await guard('/admin/users'))?.status).toBe(307);
+      expect((await guard('/admin/users'))?.pathname).toBe('/login');
     });
 
     it('honours a custom destination and omits the return param when asked', async () => {
       const adapter = createNextAdapter(makeAuth());
-      const response = await adapter.guard(new Request(`${APP}/x`), {
+      const target = await adapter.guard(new Request(`${APP}/x`), {
         redirectTo: '/enter',
         returnToParam: null,
       });
 
-      const location = new URL(response!.headers.get('location')!);
-      expect(location.pathname).toBe('/enter');
-      expect(location.search).toBe('');
+      expect(target!.pathname).toBe('/enter');
+      expect(target!.search).toBe('');
     });
   });
 });

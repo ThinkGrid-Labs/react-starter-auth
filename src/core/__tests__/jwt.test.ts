@@ -1,7 +1,9 @@
 /**
  * @jest-environment node
  */
-import { SignJWT } from 'jose';
+import { SignJWT, exportJWK, generateKeyPair } from 'jose';
+import { createServer } from 'node:http';
+import type { Server } from 'node:http';
 
 import { clearJwksCache, createTokenVerifier, readExpiry } from '../jwt';
 
@@ -96,6 +98,112 @@ describe('createTokenVerifier', () => {
     expect(() =>
       createTokenVerifier({ secret: SECRET, jwks: 'https://example.com/jwks.json' }),
     ).toThrow(/not both/);
+  });
+});
+
+/**
+ * The JWKS path is the recommended production setup — asymmetric keys fetched
+ * from the identity provider — so it is exercised against a real generated
+ * keypair rather than left to integration testing.
+ */
+describe('createTokenVerifier with JWKS', () => {
+  /**
+   * Served from a real loopback server rather than a mocked `fetch`: jose's
+   * `createRemoteJWKSet` uses its own internal Node fetch, so a `globalThis.fetch`
+   * stub never intercepts it. This runs fully offline and exercises the actual
+   * remote-key-set path.
+   */
+  let server: Server;
+  let jwksUrl: string;
+  let requests = 0;
+
+  let signingKey: CryptoKey;
+  let otherKey: CryptoKey;
+  let jwksBody: string;
+
+  beforeAll(async () => {
+    const trusted = await generateKeyPair('RS256');
+    const foreign = await generateKeyPair('RS256');
+    signingKey = trusted.privateKey as CryptoKey;
+    otherKey = foreign.privateKey as CryptoKey;
+
+    const jwk = await exportJWK(trusted.publicKey);
+    jwksBody = JSON.stringify({ keys: [{ ...jwk, kid: 'trusted-key', alg: 'RS256' }] });
+
+    server = createServer((_req, res) => {
+      requests += 1;
+      res.setHeader('content-type', 'application/json');
+      res.end(jwksBody);
+    });
+
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
+    const address = server.address();
+    const port = typeof address === 'object' && address ? address.port : 0;
+    jwksUrl = `http://127.0.0.1:${port}/.well-known/jwks.json`;
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  });
+
+  beforeEach(() => {
+    clearJwksCache();
+    requests = 0;
+  });
+
+  afterEach(() => clearJwksCache());
+
+  function sign(key: CryptoKey, kid = 'trusted-key') {
+    return new SignJWT({ sub: 'user-1' })
+      .setProtectedHeader({ alg: 'RS256', kid })
+      .setIssuedAt()
+      .setExpirationTime('1h')
+      .sign(key);
+  }
+
+  it('verifies a token against the published key', async () => {
+    const verify = createTokenVerifier({ jwks: jwksUrl });
+    await expect(verify(await sign(signingKey))).resolves.toMatchObject({ sub: 'user-1' });
+    expect(requests).toBeGreaterThan(0);
+  });
+
+  it('rejects a token signed by a key that is not published', async () => {
+    const verify = createTokenVerifier({ jwks: jwksUrl });
+    await expect(verify(await sign(otherKey))).rejects.toThrow();
+  });
+
+  it('rejects an HS256 token when the allowlist is asymmetric', async () => {
+    // The RS256-to-HS256 downgrade: sign with the public key as an HMAC secret.
+    const verify = createTokenVerifier({ jwks: jwksUrl });
+    const forged = await new SignJWT({ sub: 'admin' })
+      .setProtectedHeader({ alg: 'HS256', kid: 'trusted-key' })
+      .setExpirationTime('1h')
+      .sign(new TextEncoder().encode(jwksBody));
+
+    await expect(verify(forged)).rejects.toThrow();
+  });
+
+  it('reuses one key set across verifiers for the same URL', async () => {
+    const first = createTokenVerifier({ jwks: jwksUrl });
+    const second = createTokenVerifier({ jwks: jwksUrl });
+
+    await first(await sign(signingKey));
+    await second(await sign(signingKey));
+
+    // jose caches internally; the point is that the second verifier did not
+    // build a second remote key set and refetch.
+    expect(requests).toBe(1);
+  });
+
+  it('enforces issuer alongside the signature', async () => {
+    const verify = createTokenVerifier({ jwks: jwksUrl, issuer: 'https://issuer.example' });
+    const wrongIssuer = await new SignJWT({ sub: 'u' })
+      .setProtectedHeader({ alg: 'RS256', kid: 'trusted-key' })
+      .setIssuer('https://evil.example')
+      .setExpirationTime('1h')
+      .sign(signingKey);
+
+    await expect(verify(wrongIssuer)).rejects.toThrow();
   });
 });
 

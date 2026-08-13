@@ -504,6 +504,28 @@ describe('refresh token reuse detection', () => {
   });
 });
 
+describe('GET /csrf', () => {
+  it('issues a token when none exists', async () => {
+    const handlers = createAuthHandlers(baseConfig());
+    const response = await handlers.handle(req('/csrf'));
+
+    expect(response.status).toBe(200);
+    const { token } = (await response.json()) as { token: string };
+    expect(token).toMatch(/^[0-9a-f]{64}$/);
+    expect(readSetCookies(response).csrf.value).toBe(token);
+  });
+
+  it('returns the existing token without rotating it', async () => {
+    const handlers = createAuthHandlers(baseConfig());
+    const existing = 'a'.repeat(64);
+    const response = await handlers.handle(req('/csrf', { jar: { csrf: existing } }));
+
+    await expect(response.json()).resolves.toEqual({ token: existing });
+    // No Set-Cookie: rotating here would break a request already in flight.
+    expect(response.headers.getSetCookie()).toHaveLength(0);
+  });
+});
+
 describe('routing and server helpers', () => {
   it('405s on the wrong method', async () => {
     const handlers = createAuthHandlers(baseConfig());
@@ -533,6 +555,32 @@ describe('routing and server helpers', () => {
 
     const sealed = await handlers.getSealedSession(req('/session', { jar }));
     expect(sealed?.accessToken).toBe('access-token-1');
+  });
+
+  it('reads a session straight from a cookie header', async () => {
+    const handlers = createAuthHandlers(baseConfig());
+    const { jar } = await login(handlers);
+    const header = cookieHeader(jar);
+
+    // What the framework adapters use: cookies without a Request to hang them on.
+    await expect(handlers.getSessionFromCookieHeader(header)).resolves.toEqual({
+      user: ADA,
+      expiresAt: expect.any(Number),
+    });
+    await expect(handlers.getSealedSessionFromCookieHeader(header)).resolves.toMatchObject({
+      accessToken: 'access-token-1',
+    });
+  });
+
+  it('returns null from a cookie header with no session', async () => {
+    const handlers = createAuthHandlers(baseConfig());
+    await expect(handlers.getSessionFromCookieHeader(null)).resolves.toBeNull();
+    await expect(handlers.getSessionFromCookieHeader('other=1')).resolves.toBeNull();
+  });
+
+  it('reports the mount path adapters route against', () => {
+    expect(createAuthHandlers(baseConfig()).basePath).toBe('/api/auth');
+    expect(createAuthHandlers(baseConfig({ basePath: '/auth/' })).basePath).toBe('/auth');
   });
 
   it('applies the __Host- prefix when cookies qualify', () => {

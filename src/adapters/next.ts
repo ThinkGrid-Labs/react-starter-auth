@@ -41,12 +41,19 @@ export interface NextAdapter<TUser> {
   /** Server-only: includes the access token, for calling your resource API. */
   getSealedSession(store: CookieStoreLike): Promise<SealedSession<TUser> | null>;
   /**
-   * Middleware guard. Returns a redirect `Response` for signed-out visitors,
-   * or `null` to let the request continue.
+   * Middleware guard. Returns where to send a signed-out visitor, or `null` to
+   * let the request continue. This is the real enforcement point — the
+   * client-side guards are UX.
    *
-   * This is the real enforcement point — the client-side guards are UX.
+   * A `URL` rather than a `Response` so the caller stays in one idiom: the
+   * continue branch already needs `NextResponse.next()`, so building the
+   * redirect the same way keeps middleware readable and leaves headers,
+   * cookies and rewrites under the caller's control.
+   *
+   *   const to = await nextAuth.guard(request);
+   *   return to ? NextResponse.redirect(to) : NextResponse.next();
    */
-  guard(request: Request, options?: GuardOptions): Promise<Response | null>;
+  guard(request: Request, options?: GuardOptions): Promise<URL | null>;
 }
 
 /**
@@ -89,7 +96,7 @@ export function createNextAdapter<TUser = Record<string, unknown>>(
       if (returnToParam) {
         target.searchParams.set(returnToParam, url.pathname + url.search);
       }
-      return Response.redirect(target, 307);
+      return target;
     },
   };
 }

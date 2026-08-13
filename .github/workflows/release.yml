@@ -23,8 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Full history and tags: the guard below needs to see existing tags,
+          # and the changelog is generated from commit history.
           fetch-depth: 0
           ref: main
+
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -32,11 +35,38 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: git config --global user.name "github-actions[bot]"
-      - run: git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # This workflow fires on every successful CI run on main, but the version
+      # only changes when someone bumps it. Without this guard every later merge
+      # would try to republish the same version and fail.
+      - name: Has this version already been released?
+        id: check
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "v$VERSION is already tagged — nothing to release."
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            echo "v$VERSION is not tagged yet — releasing."
+          fi
+
+      - name: Configure git identity
+        if: steps.check.outputs.released == 'false'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # `--no-increment` publishes exactly the version in package.json rather
+      # than deriving one from commit messages, so the released version is
+      # whatever the committed manifest says and nothing else.
+      #
       # `prepublishOnly` re-runs lint, typecheck, tests and build before the
       # tarball is uploaded, so a broken tree cannot reach npm.
-      - run: pnpm release-it --ci
+      - name: Release v${{ steps.check.outputs.version }}
+        if: steps.check.outputs.released == 'false'
+        run: pnpm release-it --ci --no-increment
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

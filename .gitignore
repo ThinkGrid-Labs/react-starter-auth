@@ -8,6 +8,16 @@ dist
 # caches
 .jest-cache
 *.tsbuildinfo
+coverage
+
+# playwright
+test-results
+playwright-report
+.playwright
+
+# next.js (examples)
+.next
+.env.local
 
 # logs
 npm-debug.log

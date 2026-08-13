@@ -304,10 +304,14 @@ export const { GET, POST } = nextAuth.handlers;
 ```ts
 // middleware.ts — the real access control
 export async function middleware(request: NextRequest) {
-  return (await nextAuth.guard(request, { redirectTo: '/login' })) ?? NextResponse.next();
+  const redirectTo = await nextAuth.guard(request, { redirectTo: '/login' });
+  return redirectTo ? NextResponse.redirect(redirectTo) : NextResponse.next();
 }
-export const config = { matcher: ['/dashboard/:path*'] };
+// Both entries: '/dashboard/:path*' matches the children, not '/dashboard' itself
+export const config = { matcher: ['/dashboard', '/dashboard/:path*'] };
 ```
+
+`guard` hands back a `URL` rather than a `Response` so middleware stays in one idiom — the continue branch already needs `NextResponse.next()` — and so headers, cookies and rewrites stay under your control.
 
 ```tsx
 // app/layout.tsx — read the session from cookies(), no fake Request needed
@@ -389,6 +393,8 @@ What this protects against, stated plainly:
 ### ⬆️ Migrating from 0.1.x
 
 0.1.x kept the JWT in a JavaScript-readable cookie and the user in `localStorage`, and never verified a signature. There is no way to make that secure incrementally, so the client API changed shape. `js-cookie` is no longer a dependency.
+
+**[MIGRATION.md](MIGRATION.md) has the step-by-step guide.** The summary:
 
 | 0.1.x | Now |
 |---|---|
