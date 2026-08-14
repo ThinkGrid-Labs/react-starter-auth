@@ -1,7 +1,7 @@
 {
   "name": "@thinkgrid/react-starter-auth",
   "version": "1.0.2",
-  "description": "Secure JWT authentication for React and Next.js — HttpOnly server sessions, verified tokens, CSRF built in.",
+  "description": "Secure JWT authentication for React and Next.js \u2014 HttpOnly server sessions, verified tokens, CSRF built in.",
   "keywords": [
     "react",
     "nextjs",
@@ -16,7 +16,12 @@
     "bff",
     "react-router",
     "remix",
-    "ssr"
+    "ssr",
+    "typescript",
+    "token-handler",
+    "refresh-token",
+    "app-router",
+    "security"
   ],
   "license": "MIT",
   "author": "Dennis Paler <dennis@thinkgrid.dev>",
@@ -78,8 +83,7 @@
   "sideEffects": false,
   "files": [
     "dist",
-    "CHANGELOG.md",
-    "MIGRATION.md"
+    "CHANGELOG.md"
   ],
   "publishConfig": {
     "access": "public"
